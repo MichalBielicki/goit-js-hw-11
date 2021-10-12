@@ -7,17 +7,17 @@ import axios from 'axios';
 const input = document.querySelector('input[type="text"]');
 const gallery = document.querySelector('.gallery');
 const loadMoreBtn = document.querySelector('.load-more');
-const searchBtn = document.querySelector('button');
+const searchBtn = document.querySelector('.search-form__btn');
 
 loadMoreBtn.style.display = 'none';
 let page = 1;
 let totalHits = 0;
 let leftHits;
 
-async function getPhoto(name, pageNumber) {
+async function getPhoto(name, page) {
   try {
     const response = await axios.get(
-      `https://pixabay.com/api/?key=23709180-349fcff3bbc1fea5bbf1858d4&q=${name}&image_type=photo&orientation=horizontal&safesearch=true&page=${pageNumber}&per_page=40`,
+      `https://pixabay.com/api/?key=23709180-349fcff3bbc1fea5bbf1858d4&q=${name}&image_type=photo&orientation=horizontal&safesearch=true&page=${page}&per_page=40`,
     );
     console.log(response);
     return response.data;
@@ -26,7 +26,7 @@ async function getPhoto(name, pageNumber) {
   }
 }
 
-const findImages = () => {
+function findImages() {
   getPhoto(input.value, page)
     .then(photos => {
       if (page < 1) {
@@ -40,12 +40,13 @@ const findImages = () => {
       }
       renderImages(photos);
       page += 1;
+      console.log(page);
       leftHits = totalHits - page * 40;
     })
     .catch(err => {
       console.log(err);
     });
-};
+}
 function renderImages(photos) {
   totalHits = photos.totalHits;
   if (page <= 1) {
@@ -62,27 +63,35 @@ function renderImages(photos) {
   const markup = photos.hits
     .map(hit => {
       return `<div class="photo-card">
-      <a class="gallery__item" href="${hit.largeImageURL}"> <img class="gallery__image" src="${hit.webformatURL}" alt="${hit.tags}" loading="lazy" /></a>
+      <a class="photo-card__item" href="${hit.largeImageURL}"> <img class="photo-card__img" src="${hit.webformatURL}" alt="${hit.tags}" loading="lazy" /></a>
       <div class="info">
-        <p class="info-item">
-          <p><b>Likes</b> <br>${hit.likes}</br></p>
-        </p>
-        <p class="info-item">
-          <p><b>Views</b> <br>${hit.views}</br></p>
-        </p>
-        <p class="info-item">
-          <p><b>Comments</b> <br>${hit.comments}</br></p>
-        </p>
-        <p class="info-item">
-          <p><b>Downloads</b> <br>${hit.downloads}</br></p>
-        </p>
+      <p class="info-item">
+      <b class="info-item__description">Likes
+      <span class="info-item__count">${hit.likes}</span>
+      </b>
+    </p>
+    <p class="info-item">
+      <b class="info-item__description">Views
+      <span class="info-item__count">${hit.views}</span>
+      </b>
+    </p>
+    <p class="info-item">
+      <b class="info-item__description">Comments
+      <span class="info-item__count">${hit.comments}</span>
+      </b>
+    </p>
+    <p class="info-item">
+      <b class="info-item__description">Downloads
+      <span class="info-item__count">${hit.downloads}</span>
+      </b>
+    </p>
       </div>
     </div>`;
     })
     .join('');
   gallery.insertAdjacentHTML('beforeend', markup);
 
-  if (pageNumber > 1) {
+  if (page > 1) {
     const { height: cardHeight } = document
       .querySelector('.gallery .photo-card')
       .getBoundingClientRect();
